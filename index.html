@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AIoT 국제전시회 참관 미션</title>
-<meta name="theme-color" content="#eef3f9">
+<meta name="theme-color" content="#2f4f4f">
 <style>
 :root{
   --brand:#03c75a; --brand-dim:#eefaf3; --brand-line:#9fe4bf; --brand-shadow:rgba(3,199,90,.12);
   --cta:#03a94d;
-  --page:#eef3f9; --canvas:#ffffff; --fill:#f5f6f7; --fill-2:#eceef0;
+  --page:#2f4f4f; --on-page:#ffffff; --on-page-2:rgba(255,255,255,.78); --canvas:#ffffff; --fill:#f5f6f7; --fill-2:#eceef0;
   --ink:#1c1c1c; --ink-2:#2e2e2e; --muted:#737373; --hover:#595959;
   --link:#0c43b7;
   --line:#e5e5e5; --line-2:rgba(0,0,0,.15);
@@ -44,14 +44,14 @@ button:focus-visible,summary:focus-visible,textarea:focus-visible,a:focus-visibl
 
 /* 표지 */
 .masthead{padding:28px 0 8px}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--brand);margin:0 0 10px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--on-page);margin:0 0 10px}
 .eyebrow i{width:10px;height:10px;border-radius:50%;background:var(--brand)}
-.course{margin:-6px 0 16px;font-size:14.7px;color:var(--muted)}
+.course{margin:-6px 0 16px;font-size:14.7px;color:var(--on-page-2)}
 .inapp{margin:16px 0 0;padding:14px 16px;border-radius:12px;border:1px solid var(--brand-line);background:var(--brand-dim);font-size:15px;color:var(--ink-2)}
 .inapp b{color:var(--ink)}
 .inapp a{display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:10px;border-radius:4px;
   background:var(--cta);color:#fff;font-size:16px;font-weight:700;text-decoration:none}
-.masthead h1{font-size:28px;font-weight:700;letter-spacing:-.6px;line-height:1.25;margin:0 0 14px;color:var(--ink)}
+.masthead h1{font-size:28px;font-weight:700;letter-spacing:-.6px;line-height:1.25;margin:0 0 14px;color:var(--on-page)}
 .facts{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;
   padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--canvas)}
 .facts dt{font-size:14.7px;font-weight:500;color:var(--muted)}
@@ -86,9 +86,9 @@ details.note[open]>summary{border-bottom:1px solid var(--line)}
 
 /* 구역 */
 .zone{display:flex;align-items:baseline;gap:9px;margin:28px 0 10px}
-.zone h2{font-size:18px;font-weight:600;letter-spacing:-.16px;margin:0}
-.zone .range{margin-left:auto;font-size:14px;color:var(--muted)}
-.zone-note{margin:-2px 0 10px;font-size:14.7px;color:var(--ink-2)}
+.zone h2{font-size:18px;font-weight:600;letter-spacing:-.16px;margin:0;color:var(--on-page)}
+.zone .range{margin-left:auto;font-size:14px;color:var(--on-page-2)}
+.zone-note{margin:-2px 0 10px;font-size:14.7px;color:var(--on-page-2)}
 
 /* 분야 카드 */
 .works{display:flex;flex-direction:column;gap:8px}
@@ -237,7 +237,7 @@ textarea::placeholder,.in::placeholder{color:var(--muted)}
   border-radius:9999px;font-size:15px;opacity:0;pointer-events:none;width:max-content;
   transition:opacity .25s,transform .25s;z-index:40;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.tail{margin:26px 0 6px;font-size:14px;color:var(--muted);text-align:center}
+.tail{margin:26px 0 6px;font-size:14px;color:var(--on-page-2);text-align:center}
 </style>
 </head>
 <body>

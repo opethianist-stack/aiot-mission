@@ -42,8 +42,10 @@ const LEGACY = {
 
 /* 앱이 halls를 보내기 전에 setup을 실행할 때 쓰는 기본 전시 분야 목록 */
 const DEFAULT_HALLS = [
-  "산업·생활 안전 AIoT", "스마트홈·오피스·헬스케어", "에너지·환경·디지털 트윈", "제조·농림축산·물류",
-  "AI 기술·AI 인프라", "IoT 디바이스·플랫폼", "유무선 통신·네트워크", "보안 솔루션"
+  "산업·생활안전·재해재난", "스마트 홈·오피스·헬스케어", "스마트 시티·빌리지", "에너지·환경",
+  "제조·유통·물류·농수축산", "S/W·플랫폼", "디바이스·통신기기", "보안",
+  "Moving City AI", "AX & Physical AI", "Real Life AI", "Sustainable City AI", "X-Space AI",
+  "AI&IoT 쇼케이스 · NIPA 전시관"
 ];
 
 const MAX_LEN = 5000;

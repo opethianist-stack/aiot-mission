@@ -268,7 +268,7 @@ textarea::placeholder,.in::placeholder{color:var(--muted)}
     <summary>미션 진행 방법</summary>
     <div class="note-body">
       <ol>
-        <li>전시 분야 <span id="n-total">14</span>곳을 둘러본 뒤 <b>관람</b>을 누르면 스탬프가 찍힙니다. 부스는 전시장 곳곳에 분야별로 섞여 있으니, 본 부스가 어느 분야인지 생각하며 기록하십시오.</li>
+        <li>전시장을 <span id="n-total">11</span>개 구역으로 나눴습니다. 구역을 둘러본 뒤 <b>관람</b>을 누르면 스탬프가 찍힙니다. 번호는 추천 동선 순서이고 배치도의 번호와 같습니다.</li>
         <li><b>기록</b>을 열어 방문 부스를 누르거나 직접 적고, 학교 적용가능성(상·중·하)과 한 줄 메모를 남기십시오. 부스나 적용가능성을 고르면 스탬프도 함께 찍힙니다. 모든 항목은 선택이며 비워 두어도 됩니다.</li>
         <li>관람을 마치면 아래 <b>마무리 문항</b> 3개를 쓰고 제출하십시오. 다시 제출하면 이전 제출 내용이 새 내용으로 바뀝니다.</li>
       </ol>
@@ -281,6 +281,7 @@ textarea::placeholder,.in::placeholder{color:var(--muted)}
     <div class="note-body">
       <p class="pending" id="route-pending" hidden></p>
       <p style="margin-top:0" id="route-lead"></p>
+      <div id="route-img"></div>
       <ol class="route" id="route"></ol>
     </div>
   </details>
@@ -294,6 +295,11 @@ textarea::placeholder,.in::placeholder{color:var(--muted)}
       <div class="find"><div class="search"><input id="find" type="search" enterkeyhint="search" placeholder="기업명 또는 제품명 검색" aria-label="부스 검색"><span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></span></div></div>
       <div class="dir" id="dir"></div>
     </div>
+  </details>
+
+  <details class="note" id="cat-box">
+    <summary>전시 분야 안내</summary>
+    <div class="note-body" id="cat-body"></div>
   </details>
 
   <details class="note" id="contact-box" hidden>
@@ -396,89 +402,66 @@ const CONTACTS = [
   {label:"카카오톡 오픈채팅", text:"열기", url:"https://open.kakao.com/o/s9dKGiIi"}
 ];
 
-/* 배치도 — 공식 배치도 이미지 파일을 받으면 img에 파일명(예: "boothmap.jpg"), alt에 설명을 넣고 pending을 비운다.
-   links는 외부 링크 버튼, brochure는 이 저장소의 PDF를 받는 버튼 */
+/* 배치도 — img는 공식 배치도 도면을 잘라 낸 이미지, routeImg는 추천 동선 번호를 얹은 이미지.
+   downloads는 이 저장소의 PDF 받기 버튼, links는 외부 링크 버튼 */
 const MAP = {
-  img: "",
-  alt: "",
-  width: 0, height: 0,
-  pending: "공식 부스 배치도는 아래 공식 페이지에서 볼 수 있습니다. 이 화면의 부스 목록은 브로슈어와 보도자료로 확인된 기업이며, 부스 번호가 확정된 곳은 NIPA 전시관(A120)뿐입니다. 나머지 번호는 배치도에서 확인하십시오.",
+  img: "boothmap.jpg", routeImg: "boothmap-route.jpg",
+  alt: "코엑스 3층 D홀 부스 배치도. 출입구와 등록 데스크는 아래쪽, 세미나룸과 카페 라운지는 왼쪽 별관에 있다. 도면 가운데 왼쪽에 NIPA 전시관(A120), 가운데에 전남광주통합특별시관(C121), 오른쪽 아래에 MARS 2026 메인관(F101)이 있다.",
+  width: 2560, height: 2240,
+  pending: "",
   links: [
-    {label:"공식 부스 배치도 페이지", note:"새 창", url:"https://www.aiotkorea.or.kr/2026/kor/about/booth.asp"},
-    {label:"참가사 리스트 · 배치도 PDF", note:"새 창", url:"https://www.aiotkorea.or.kr/2026/kor/images/about/booth2026.pdf"}
+    {label:"공식 부스 배치도 페이지", note:"새 창", url:"https://www.aiotkorea.or.kr/2026/kor/about/booth.asp"}
   ],
-  brochure: "aiot-week-2026-brochure.pdf",
-  brochureLabel: "AIoT Week Korea 2026 브로슈어 받기",
-  brochureNote: "9쪽 · 10MB",
-  brochureFile: "AIoT_Week_Korea_2026_브로슈어.pdf"
+  downloads: [
+    {label:"참가사 리스트 · 배치도 PDF 받기", note:"1쪽 · 0.7MB", url:"aiot-booth-2026.pdf", file:"AIoT_Korea_2026_참가사리스트_배치도.pdf"},
+    {label:"AIoT Week Korea 2026 브로슈어 받기", note:"9쪽 · 10MB", url:"aiot-week-2026-brochure.pdf", file:"AIoT_Week_Korea_2026_브로슈어.pdf"}
+  ]
 };
 
-/* 전시 분야 — g:0 AIoT 국제전시회(공식 전시품목 분류를 8개로 묶음), g:1 AI EXPO MARS 2026(공식 5개 분야), g:2 AI&IoT 쇼케이스 NIPA 전시관(A120).
-   출처: 2026 AIoT Week Korea 브로슈어(2026-10-12), 참가사 보도자료.
-   loc: 배치도 위치 힌트(배치도 PDF 반영 후 채운다), b: 해당 분야 부스("부스번호 기업명 · 제품"). 부스 번호가 확인된 것만 앞에 붙인다 */
+/* 전시장 구역 — 공식 부스 배치도(booth2026.pdf, AIoT Korea 2026 참가사 리스트)의 위치를 기준으로 11개로 나눴다.
+   배열 순서가 추천 동선이고 카드·도면의 번호와 같다. z: 배지(부스 번호 범위), loc: 위치 힌트, b: 부스 칩 "부스번호 기업명 · 제품".
+   제품 설명은 브로슈어·보도자료로 확인된 기업에만 붙였다. 부스 번호는 참가사 리스트 그대로다 */
 const HALLS = [
-  {g:0, ko:"산업·생활안전·재해재난", z:"SAFE", en:"Industrial & Public Safety", loc:"",
-   d:"AI+IoT 기반 재해대응 시스템과 디지털 안전관리 시스템입니다. 현장 위험을 센서와 AI로 미리 감지하고 알려 주는 기술이 여기에 듭니다.",
-   q:"학교 안에서 사고가 잦은 곳(계단·운동장·급식실·공사 구역) 중 센서와 AI로 먼저 지켜볼 곳은 어디입니까?",
-   b:["이투온 · SafeEdgeAI(현장 안전 엣지 AI)","비전파크 · VP3D-SS(3차원 감지 라이다)","레이컴 · AI Agent·모바일 온디바이스 AI 위험성평가 자동화"]},
-  {g:0, ko:"스마트 홈·오피스·헬스케어", z:"HOME", en:"Smart Home · Office · Healthcare", loc:"",
-   d:"스마트가전·로봇, 홈엔터테인먼트, 스마트워크·오피스 솔루션, 스마트헬스·뷰티케어, 사회적 약자 돌봄·지원 서비스입니다.",
-   q:"교무실·교실·보건실 중 한 곳을 스마트 오피스로 바꾼다면 가장 먼저 바꿀 것은 무엇입니까?",
-   b:[]},
-  {g:0, ko:"스마트 시티·빌리지", z:"CITY", en:"Smart City & Village", loc:"",
-   d:"스마트교통, 스마트건설 인프라, 스마트정부 등 도시와 마을 단위의 AIoT 서비스입니다.",
-   q:"학교 주변 통학로·교통안전이나 시설 관리에 도시 기술을 가져온다면 무엇이 가장 먼저 필요합니까?",
-   b:["옴니솔루션 · OmniSolution-City(IoT 센서 융합 AI 도시안전 예측·진단·대응)"]},
-  {g:0, ko:"에너지·환경", z:"ENV", en:"Energy & Environment", loc:"",
-   d:"AI+IoT 기반 에너지 절감 서비스, 스마트에너지 서비스 플랫폼, 친환경 음식물 자원화, 대기환경 모니터링·관리 시스템입니다.",
-   q:"학교 전기·가스 사용과 교실 공기질을 한 화면에서 본다면, 어떤 결정을 더 빨리 내릴 수 있겠습니까?",
-   b:["에이아이텔레콤 · Smart Plug2(AI 원격 시설 유지보수·전력관리)"]},
-  {g:0, ko:"제조·유통·물류·농수축산", z:"IND", en:"Manufacturing · Logistics · Agriculture", loc:"",
-   d:"공정·생산관리, 예지진단, 스마트제조와 AI+IoT 물류 자동화, 스마트농업, 농수산물 관리 시스템입니다.",
-   q:"진로교육이나 학교 텃밭·급식 운영에 연결해 볼 만한 기술이 있었습니까?",
-   b:["퓨처메인 · ExRBM 2.0(예지보전·설비 최적관리 Vertical AI)","멀티택시스템즈 · 로라(LoRa) 모듈·게이트웨이"]},
-  {g:0, ko:"S/W·플랫폼", z:"PLAT", en:"Software & Platforms", loc:"",
-   d:"영상·음성 인식 분석, 예지·예방 정비, 디지털 트윈 같은 소프트웨어와 IoT·셀룰러·디바이스·오픈H/W 플랫폼입니다. 기업용 AI 인프라와 AI 사용량·비용 관리 플랫폼도 여기서 볼 수 있습니다.",
-   q:"학교에 이미 있는 기기(CCTV·출입기·공기청정기 등)를 하나의 플랫폼으로 묶는다면 무엇이 편해지겠습니까?",
-   b:["드란비 · EdgeGuard(AI 런타임 전력·발열 제어)","이모션웨이브 · AIMPLE INFRA(기업용 AI 인프라)","엔텔스 · 타잔DB·FOSSA Billing(AI 데이터·과금 플랫폼)"]},
-  {g:0, ko:"디바이스·통신기기", z:"DEV", en:"Devices & Communication", loc:"",
-   d:"칩·모듈·센서·게이트웨이·태그·리더기·안테나 같은 디바이스와, 5G·NB-IoT·Sigfox·이음5G 등 유무선 통신 장비·부품입니다.",
-   q:"학교 무선망이 끊기거나 느릴 때 수업에 생기는 문제를 떠올리면, 어떤 장비 설명이 가장 와닿았습니까?",
-   b:["LG유플러스 · 라우터랩(산업 현장 통신 솔루션)","에이아이텔레콤 · AIT550(와이파이7 무선 라우터)","아모에스넷 · 시그폭스(저비용 사물인터넷망)","아이오티랩 · UniFi(통합 네트워크·보안 인프라)","레디츠 · VIIK(온디바이스 비전 AI 3D 스캐너)","써니웨이브텍 · Aurora(자기장 통신, 금속 밀폐공간 데이터 전송)"]},
-  {g:0, ko:"보안", z:"SEC", en:"Security", loc:"",
-   d:"디바이스·통신·네트워크 보안과 플랫폼·서비스 보안입니다.",
-   q:"학생·교직원 정보를 지키기 위해 IoT 기기를 들이기 전에 학교가 점검해야 할 것은 무엇입니까?",
-   b:[]},
-  {g:1, ko:"Moving City AI", z:"MOVE", en:"AI EXPO MARS 2026", loc:"",
-   d:"미래차, 자율주행, UAM, 라스트마일 배송로봇 등 AI 기반 미래 이동 기술과 서비스입니다.",
-   q:"자율주행·배송로봇이 일상이 되면 통학·현장체험학습 안전 기준은 어떻게 달라져야 합니까?",
-   b:[]},
-  {g:1, ko:"AX & Physical AI", z:"AX", en:"AI EXPO MARS 2026", loc:"",
-   d:"산업용 로봇, AI 팩토리, 디지털트윈 등 제조·산업현장의 AI 전환(AX)과 Physical AI 기반 로봇 기술입니다.",
-   q:"로봇·AI 팩토리를 보며, 학생 진로교육에서 먼저 다뤄야 할 직업 변화는 무엇이었습니까?",
-   b:[]},
-  {g:1, ko:"Real Life AI", z:"LIFE", en:"AI EXPO MARS 2026", loc:"",
-   d:"헬스케어, 스마트홈, 에듀테크, 서비스로봇 등 시민이 일상에서 직접 체감하는 AI 기술·서비스입니다.",
-   q:"헬스케어·에듀테크·서비스로봇 중 학교 현장에 가장 빨리 들어올 것 같은 것은 무엇입니까?",
-   b:[]},
-  {g:1, ko:"Sustainable City AI", z:"SUST", en:"AI EXPO MARS 2026", loc:"",
-   d:"도시데이터, 에너지·환경, 교통·안전, 수소 기반 AI 도시, 도시 인프라 등 지속가능한 도시 운영 혁신기술입니다.",
-   q:"학교 에너지·환경 데이터를 도시 단위 데이터와 연결한다면 어떤 활용이 가능하겠습니까?",
-   b:[]},
-  {g:1, ko:"X-Space AI", z:"SPACE", en:"AI EXPO MARS 2026", loc:"",
-   d:"우주항공, 위성데이터, 항공모빌리티, 우주항공 인프라 등 AI 기반 미래산업 확장 기술입니다.",
-   q:"우주항공·위성데이터 같은 분야를 학생 진로·융합수업과 연결한다면 어떤 활동을 기획하시겠습니까?",
-   b:[]},
-  {g:2, ko:"AI&IoT 쇼케이스 · NIPA 전시관", z:"A120", en:"AI&IoT Showcase", loc:"Hall D NIPA 전시관(부스번호 A120)",
-   d:"정보통신산업진흥원(NIPA)이 지원하는 AIoT 중소기업 8곳의 공동 전시관입니다. 국내 수요처와의 비즈니스 파트너십과 판로 개척을 돕는 자리입니다.",
-   q:"중소기업 시제품 중, 학교가 수요처로 도입을 검토해 볼 만한 것은 무엇이었습니까?",
-   b:["A120 뉴로플로우 · 현장 데이터 기반 위험성평가 자동화","A120 달리웍스 · AIoT 클라우드 플랫폼, AI 솔루션","A120 시그봇 · 산업용·로봇용 라이다(LiDAR) 센서","A120 씨앤테크 · 기계·설비 운영·관리 데이터 플랫폼(Asset Pro+)","A120 엠피웨이브 · 온디바이스 AI 음성 인터페이스 마이크 어레이","A120 인포지아 · 로우코드 AIoT 오케스트레이션 플랫폼","A120 지엔 · 펌웨어 취약점 분석·공급망 보안","A120 트리니오 · ERP·MES 연동 제조 AI Agent(DANA)"]}
+  {"g": 0, "ko": "입구 앞 · 남쪽 줄", "z": "A–E", "en": "A100 – E108", "loc": "도면 아래쪽, 등록 데스크 바로 위 줄(A100~E108)", "d": "출입구에서 가장 가까운 줄입니다. 작은 부스 19곳이 가로로 늘어서 있습니다. 한국태양유전(B108), 한국전파진흥협회(C109), 아이오티랩(E100) 등이 있습니다.", "q": "입구 앞 부스 중 학교 시설·안전 관리에 바로 가져다 쓸 만한 것은 무엇이었습니까?", "b": ["A100 에스디티", "A101 레이컴 · AI 위험성평가 자동화", "A104 제이와이텍코리아", "A108 코드비전", "A109 디에이치글로벌", "B101 동아피엠", "B108 한국태양유전", "C101 엠폴", "C105 이엘피", "C109 한국전파진흥협회", "D100 테솔", "D101 쓰리에이로직스", "D104 씨엠아이텍", "D105 하이비", "D108 윌콘에이아이", "D109 케이쓰리아이", "E100 아이오티랩 · UniFi(통합 네트워크·보안)", "E104 SHENZHEN HOPE MICROELECTRONICS", "E108 바이텍테크놀로지"]},
+  {"g": 0, "ko": "기관 공동관", "z": "B·C·D", "en": "B112 · B113 · C113 · D113", "loc": "남쪽 줄 바로 위(B112·B113·C113·D113)", "d": "한국전자기술연구원(B113), 경기도경제과학진흥원 공동관(C113), 인공지능산업융합사업단 공동관(D113)처럼 기관이 여러 기업을 묶어 낸 부스입니다. C113에는 드란비·레디츠·퓨처메인 등 7곳, D113에는 가우디오랩·노타 등 5곳이 있습니다.", "q": "공공기관·지자체가 지원하는 기술 중 학교가 활용하거나 협력할 만한 것은 무엇이었습니까?", "b": ["B112 케이엠에스", "B113 한국전자기술연구원", "C113 경기도경제과학진흥원", "C113 드란비 · EdgeGuard(AI 런타임 제어)", "C113 레디츠 · VIIK(3D 포인트클라우드 스캐너)", "C113 세이프텍", "C113 아바드", "C113 이모션웨이브 · AIMPLE INFRA(기업용 AI 인프라)", "C113 퓨처메인 · ExRBM 2.0(예지보전 AI)", "D113 가우디오랩", "D113 노타", "D113 라피트", "D113 슈퍼브에이아이", "D113 인공지능산업융합사업단"]},
+  {"g": 0, "ko": "왼쪽 별관 · SS구역", "z": "SS", "en": "SS101 – SS122", "loc": "도면 왼쪽 별관. 세미나룸(SS200)과 카페 라운지 사이", "d": "세미나룸과 카페 라운지가 있는 왼쪽 별관입니다. SS101~SS122에 20곳이 있고, 엘지유플러스 라우터랩(SS109), 비전파크(SS115), 옴니솔루션(SS118)이 여기 있습니다. 한양과학기술고등학교(SS106)도 참가합니다.", "q": "통신·보안·안전 장비 중 학교 시설 관리에 도입을 검토할 만한 것은 무엇이었습니까?", "b": ["SS101 토리전자", "SS102 디시오", "SS103 부천산업진흥원", "SS104 엔씨엘", "SS105 웨이브인센스", "SS106 한양과학기술고등학교", "SS107 포웰컴퍼니", "SS108 아이앤씨테크놀로지", "SS109 엘지유플러스 라우터랩 · 산업 현장 통신 솔루션", "SS110 애니테스트", "SS111 NEWMOSHINE ELECTRONICS", "SS112 써모아이", "SS113 엔투엠", "SS114 지아이랩", "SS115 비전파크 · VP3D-SS(3차원 감지 라이다)", "SS116 코어 와이어리스", "SS118 옴니솔루션 · OmniSolution-City(AI 도시안전)", "SS119 유니바", "SS120 딥엘", "SS122 카페24"]},
+  {"g": 0, "ko": "NIPA 전시관 · AI&IoT 쇼케이스", "z": "A120", "en": "AI&IoT Showcase", "loc": "도면 왼쪽 가운데의 큰 부스(A120)", "d": "정보통신산업진흥원(NIPA) 전시관입니다. 쇼케이스 8곳(뉴로플로우·달리웍스·시그봇·씨앤테크·엠피웨이브·인포지아·지엔·트리니오)을 포함해 18곳이 한 부스에 모여 있습니다. 쇼케이스는 중소기업의 판로 개척을 돕는 자리입니다.", "q": "중소기업 시제품 중, 학교가 수요처로 도입을 검토해 볼 만한 것은 무엇이었습니까?", "b": ["A120 뉴로플로우 · 위험성평가 자동화 · 쇼케이스", "A120 달리웍스 · AIoT 클라우드 플랫폼 · 쇼케이스", "A120 대구경북과학기술원", "A120 둠둠", "A120 디케이아이테크놀로지", "A120 스피랩", "A120 시그봇 · 산업·로봇용 라이다(LiDAR) · 쇼케이스", "A120 씨앤테크 · Asset Pro+(설비 데이터 플랫폼) · 쇼케이스", "A120 엠피웨이브 · 온디바이스 AI 음성 인터페이스 · 쇼케이스", "A120 올포랜드", "A120 옵트에이아이", "A120 와츠매터", "A120 인포지아 · 로우코드 AIoT 오케스트레이션 · 쇼케이스", "A120 정보통신산업진흥원", "A120 지엔 · 펌웨어 취약점·공급망 보안 · 쇼케이스", "A120 트리니오 · DANA(제조 AI Agent) · 쇼케이스", "A120 평행공간", "A120 한컴유비마이크로"]},
+  {"g": 0, "ko": "왼쪽 위 · A·B열", "z": "A·B", "en": "A130 – B138 · C142", "loc": "도면 왼쪽 위. SK텔레콤(C142)·한국전자통신연구원(B131) 대형 부스 주변", "d": "SK텔레콤(C142)과 한국전자통신연구원(ETRI, B131) 대형 부스를 중심으로 이투온(A139), 아모에스넷(A138), 써니웨이브텍(B134) 등 12곳이 있습니다.", "q": "연구기관·산학 부스에서 학생 진로나 융합수업에 연결할 만한 소재가 있었습니까?", "b": ["A130 전파플레이그라운드", "A131 아이브랩", "A134 에이콘출판", "A135 코스모스", "A138 아모에스넷 · 시그폭스(저비용 사물인터넷망)", "A139 이투온 · SafeEdgeAI(현장 안전 엣지 AI)", "A146 한국통합물류협회", "B130 라이브몰로", "B131 한국전자통신연구원", "B134 써니웨이브텍 · Aurora(자기장 통신)", "B138 새온", "C142 SK텔레콤"]},
+  {"g": 0, "ko": "위쪽 가운데 · C·D·E열", "z": "C·D·E", "en": "C131 – E138", "loc": "도면 위쪽 가운데. 한국정보통신기술협회(C131) 공동관 주변", "d": "한국정보통신기술협회(TTA) 공동관(C131), 엔텔스(D131), 한국AI사물인터넷협회(D142), 에이아이텔레콤(D138) 등 18곳이 있습니다. TTA는 oneM2M(D131)과 ICT 표준자문(E130) 부스도 따로 운영합니다.", "q": "표준·인증 부스에서 학교가 IoT 기기를 고를 때 확인해야 할 기준을 들으셨습니까?", "b": ["C131 고퀄", "C131 바이텔", "C131 솔리티", "C131 시누스소프트", "C131 한국정보통신기술협회", "C139 에이치원래디오", "C143 디티", "D131 TTA oneM2M", "D131 엔텔스 · 타잔DB·FOSSA Billing", "D135 골든밸류", "D137 버디랩", "D138 에이아이텔레콤 · AIT550 와이파이7·Smart Plug2", "D139 이노랩스", "D139 조선대학교 산학협력단 과학기술정책융합사업단", "D142 한국AI사물인터넷협회", "E130 TTA ICT 표준자문", "E134 멀티택시스템즈 · 로라(LoRa) 모듈·게이트웨이", "E138 AMICCOM"]},
+  {"g": 0, "ko": "전남광주통합특별시관", "z": "C121", "en": "", "loc": "도면 가운데의 큰 부스(C121)", "d": "전남광주통합특별시, 전남광주경제자유구역청, 나주시, 순천시, 인공지능산업융합사업단이 함께 나온 지자체 부스입니다.", "q": "지자체가 AI·IoT로 지역 산업과 인재를 키우는 방식에서 학교가 배울 점은 무엇이었습니까?", "b": ["C121 나주시", "C121 순천시", "C121 인공지능산업융합사업단", "C121 전남광주경제자유구역청", "C121 전남광주통합특별시"]},
+  {"g": 0, "ko": "오른쪽 가운데 · F·G열", "z": "F·G", "en": "F131 – G144", "loc": "도면 오른쪽 가운데. H131 공동관 왼쪽", "d": "소규모 기업 부스 19곳이 줄지어 있습니다. 밀리사이트테크놀러지스(F131), 쉐이크로봇(F141), 로보케어(G131), 시티파이브(G141) 등이 있고, 트리니오의 두 번째 부스(F132)도 여기 있습니다.", "q": "로봇·돌봄·AI 서비스 중 학교의 보건·돌봄·안전 업무에 옮길 만한 것은 무엇이었습니까?", "b": ["F131 밀리사이트테크놀러지스", "F132 트리니오 · DANA(제조 AI Agent)", "F133 프로니카(네이처컴바인드)", "F134 메타피지컬인텔리전스", "F135 에프원소프트", "F136 에이블인사이트", "F141 쉐이크로봇", "F142 후지 X 제우스", "F143 클레비", "F144 다몽", "G131 로보케어", "G132 세다(더 코어)", "G133 아이메디텍", "G135 밤볼", "G136 G-봇", "G141 시티파이브", "G142 커먼링크", "G143 오티톤 메디컬", "G144 에코놀로지"]},
+  {"g": 0, "ko": "오른쪽 위 · 기아·MARS 체험존", "z": "F·G·H", "en": "F145 – H151", "loc": "도면 오른쪽 위", "d": "기아(H151) 대형 부스와 AI EXPO MARS 2026 체험존(F153), 화성시 투자유치 홍보관(G152), 화성특례시(H150) 등 19곳이 있습니다. 카이스트 항공우주통신 및 응용지능 연구실(G147), 아주모빌리티라이프(G151)도 여기 있습니다.", "q": "미래 모빌리티·도시 기술이 통학과 도시 연계 교육에 주는 시사점은 무엇이었습니까?", "b": ["F145 더키퍼", "F146 데브닷소프트", "F147 에스티씨네트웍스", "F151 하이브넷", "F152 애드", "F153 AI EXPO MARS 2026 체험존", "G145 지먼트", "G146 파이퀀트", "G147 카이스트 항공우주통신 및 응용지능 연구실", "G148 인텔렉투스", "G149 인세라솔루션", "G150 에이엠허브", "G151 아주모빌리티라이프", "G152 화성시 투자유치 홍보관", "H146 베스텔라랩", "H147 디알티", "H149 에이디시스템", "H150 화성특례시", "H151 기아"]},
+  {"g": 0, "ko": "H131 · 동탄시티병원 X 대웅제약", "z": "H131", "en": "", "loc": "도면 오른쪽 끝 가운데의 큰 부스(H131)", "d": "동탄시티병원 X 대웅제약 이름으로 퍼즐에이아이, 마인즈에이아이, 씨어스, 웨이센 등 13곳이 함께 나온 부스입니다.", "q": "건강·돌봄 AI 중 학교 보건실과 학생 건강관리에 연결해 볼 만한 것은 무엇이었습니까?", "b": ["H131 동탄시티병원 X 대웅제약", "H131 레메디", "H131 마이베네핏", "H131 마인즈에이아이", "H131 스카이랩스", "H131 씨어스", "H131 아크", "H131 엑소시스템즈", "H131 웨이센", "H131 이모코그", "H131 티알", "H131 퍼즐에이아이", "H131 휴로틱스"]},
+  {"g": 0, "ko": "MARS 2026 메인관 · 현대차·삼성생명", "z": "F101", "en": "F101 · F121 · H121", "loc": "도면 오른쪽 아래의 큰 구역. 오른쪽 출입구 쪽", "d": "AI EXPO MARS 2026 메인관(F101)에 신세계프라퍼티, 이노스페이스, 볼트라인, 제이엠로보틱스, 화성 AI 자율주행 허브, 삼성생명 X 동탄시티병원이 나옵니다. 현대자동차그룹(F121), 아비만로보틱스(F123), 삼성생명(H121)도 이 구역입니다.", "q": "자율주행·로봇·우주 같은 미래 기술이 학교 교육과 진로에 주는 시사점은 무엇이었습니까?", "b": ["F101 볼트라인", "F101 삼성생명 X 동탄시티병원", "F101 신세계프라퍼티", "F101 이노스페이스", "F101 제이엠로보틱스", "F101 현대자동차그룹", "F101 화성 AI 자율주행 허브", "F121 현대자동차그룹", "F123 아비만로보틱스", "G124 도하시하", "H121 삼성생명"]}
 ];
 const TOTAL = HALLS.length;
+/* 공식 전시품목 분류(2026 AIoT Week Korea 브로슈어). 부스가 분야별로 모여 있지 않아 구역과는 따로 안내한다 */
+const CATS = [
+  {t:"AIoT 국제전시회", rows:[
+    ["S/W·플랫폼","영상·음성 인식 분석, 예지·예방 정비, 디지털 트윈, IoT·셀룰러·디바이스·오픈H/W 플랫폼"],
+    ["디바이스","칩, 모듈, 센서, 게이트웨이, 태그, 리더기, 안테나"],
+    ["통신기기","유무선 통신 장비·부품(5G, NB-IoT, Sigfox, 이음5G)"],
+    ["보안","디바이스·통신·네트워크 보안, 플랫폼·서비스 보안"],
+    ["스마트 홈·오피스·헬스케어","스마트가전·로봇, 홈엔터테인먼트, 스마트워크·오피스, 스마트헬스·뷰티케어, 돌봄·지원 서비스"],
+    ["스마트 시티·빌리지","스마트교통, 스마트건설 인프라, 스마트정부"],
+    ["에너지·환경","에너지 절감 서비스, 스마트에너지 플랫폼, 친환경 음식물 자원화, 대기환경 모니터링"],
+    ["제조","공정·생산관리, 예지진단, 스마트제조, 공정자동화"],
+    ["유통·물류, 농수축산","물류 자동화, 스마트농업, 농수산물 관리"],
+    ["산업·생활안전, 재해재난","재해대응 시스템·솔루션, 디지털 안전관리"]
+  ]},
+  {t:"AI EXPO MARS 2026 (화성특례시 주관)", rows:[
+    ["Moving City AI","미래차, 자율주행, UAM, 라스트마일 배송로봇"],
+    ["AX & Physical AI","산업용 로봇, AI 팩토리, 디지털트윈, Physical AI 로봇"],
+    ["Real Life AI","헬스케어, 스마트홈, 에듀테크, 서비스로봇"],
+    ["Sustainable City AI","도시데이터, 에너지·환경, 교통·안전, 수소 기반 AI 도시, 도시 인프라"],
+    ["X-Space AI","우주항공, 위성데이터, 항공모빌리티, 우주항공 인프라"]
+  ]}
+];
+
 /* 추천 동선 — HALLS 순번(0부터). 배치도가 공개되면 입구→출구 순서로 채운다. 비어 있으면 안내만 나온다 */
-const ROUTE = [];
-const ROUTE_NOTE = "추천 동선은 공식 부스 배치도를 반영하는 대로 올립니다. 현장에서는 입구에서 한 방향으로 돌며, 본 부스를 아래 분야 카드에 기록해 주십시오.";
-const ENTRY = "입구", EXIT = "출구";
+const ROUTE = [0,1,2,3,4,5,6,7,8,9,10];
+const ROUTE_NOTE = "";
+const ENTRY = "입구 · 도면 아래 왼쪽 출입구", EXIT = "출구 · 도면 아래 오른쪽 출입구 (14:50 집결)";
 
 /* 시트 열 — [키, 머리행 이름]. 여기에 항목을 추가하면 시트 오른쪽에 열이 자동으로 생긴다.
    키는 한번 정하면 바꾸지 않는다(바꾸면 새 열이 된다). 이름은 바꿔도 같은 열이 유지된다 */
@@ -492,7 +475,7 @@ const RATES = ["상","중","하"];
 const FORM_IDS = ["f-take","f-staff","f-oneyear","f-name","f-school"];
 
 /* 저장소 — localStorage 불가 시 메모리로 자동 전환 */
-const KEY="aiot2026-v2", mem={};
+const KEY="aiot2026-v3", mem={};
 const blank=()=>({done:[],memo:{},booths:{},rate:{},form:{},sid:""});
 const store={
   get(){ try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):(mem[KEY]||blank());}
@@ -559,17 +542,23 @@ if(CONTACTS.length){
 
 /* 배치도 */
 (function(){
+  const imgTag=(src,alt)=>`<a href="${esc(src)}" target="_blank" rel="noopener"><img style="display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff" src="${esc(src)}"${MAP.width?` width="${MAP.width}" height="${MAP.height}"`:""} alt="${esc(alt)}" loading="lazy"></a>`;
   if(MAP.img){
-    $("map-slot").innerHTML=`<a href="${esc(MAP.img)}" target="_blank" rel="noopener"><img style="display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--line);background:#fff" src="${esc(MAP.img)}"${MAP.width?` width="${MAP.width}" height="${MAP.height}"`:""} alt="${esc(MAP.alt)}"></a>`;
-    $("map-cap").textContent="공식 홈페이지 부스 배치도입니다. 누르면 크게 열립니다. 아래 목록의 부스 번호는 배치도의 번호와 같습니다.";
+    $("map-slot").innerHTML=imgTag(MAP.img,MAP.alt);
+    $("map-cap").textContent="공식 부스 배치도입니다. 누르면 크게 열리고, 열린 화면에서 확대해 부스 번호를 볼 수 있습니다. 아래 목록의 부스 번호는 도면의 번호와 같습니다.";
   }else{
     $("map-slot").innerHTML=`<p class="pending">${esc(MAP.pending)}</p>`;
     $("map-cap").hidden=true;
   }
+  if(MAP.routeImg) $("route-img").innerHTML=imgTag(MAP.routeImg,"배치도 위에 추천 동선 번호 1~11을 표시한 그림. 왼쪽 아래 출입구에서 시작해 시계 방향으로 돌아 오른쪽 아래 출입구로 나온다.")+`<p class="cap">누르면 크게 열립니다. 번호는 아래 구역 번호와 같습니다.</p>`;
   const links=(MAP.links||[]).map(l=>`<a class="dl" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}<span>${esc(l.note||"")}</span></a>`);
-  if(MAP.brochure) links.push(`<a class="dl" href="${esc(MAP.brochure)}" download="${esc(MAP.brochureFile||"")}" target="_blank" rel="noopener">${esc(MAP.brochureLabel||"브로슈어 받기")}<span>${esc(MAP.brochureNote||"")}</span></a>`);
+  (MAP.downloads||[]).forEach(l=>links.push(`<a class="dl" href="${esc(l.url)}" download="${esc(l.file||"")}" target="_blank" rel="noopener">${esc(l.label)}<span>${esc(l.note||"")}</span></a>`));
   $("map-links").innerHTML=links.join("");
 })();
+
+/* 전시 분야 안내 */
+$("cat-body").innerHTML=`<p style="margin-top:0">공식 전시품목 분류입니다. 같은 분야의 부스가 한곳에 모여 있지는 않으니, 구역을 돌며 본 기술이 어느 분야인지 짚어 보십시오. AI EXPO MARS 2026은 AIoT 국제전시회와 별도 행사지만 같은 D홀에서 열리며 관람이 모두 가능합니다.</p>`+
+  CATS.map(c=>`<p class="org">${esc(c.t)}</p><ul>${c.rows.map(r=>`<li><b>${esc(r[0])}</b> · ${esc(r[1])}</li>`).join("")}</ul>`).join("");
 
 /* 카드 */
 const list=$("works");
@@ -598,7 +587,7 @@ function card(i){
     <div class="row">
       <span class="badge">${esc(h.z)}</span>
       <div class="ttl">
-        <h3>${esc(h.ko)}</h3>
+        <h3>${i+1}. ${esc(h.ko)}</h3>
         <div class="en">${esc(h.en)}</div>
         ${h.loc?`<p class="loc">위치: ${esc(h.loc)}</p>`:""}
         <p class="desc">${esc(h.d)}</p>
@@ -639,14 +628,11 @@ function zoneHead(title,range,note){
   if(note){ const p=document.createElement("p"); p.className="zone-note"; p.textContent=note; list.appendChild(p); }
 }
 const GROUPS=[
-  {t:"AIoT 국제전시회", note:"공식 전시품목 분류를 8개 분야로 묶었습니다. 부스는 분야별로 한곳에 모여 있지 않을 수 있습니다."},
-  {t:"AI EXPO MARS 2026", note:"화성특례시가 주관하는 AI 엑스포로, 같은 D홀에서 함께 열립니다. 전시 분야는 공식 5개 분류 그대로입니다."},
-  {t:"AI&IoT 쇼케이스", note:"NIPA 전시관(A120)에 모인 중소기업 8곳의 공동 전시입니다."}
+  {t:"전시장 구역", note:"공식 배치도의 위치를 기준으로 나눈 구역입니다. 번호는 추천 동선 순서이고 도면의 번호와 같습니다. AI EXPO MARS 2026 메인관(F101)과 체험존(F153)은 오른쪽 구역(11번·9번)에 있습니다."}
 ];
 GROUPS.forEach((G,gi)=>{
-  const n=HALLS.filter(h=>h.g===gi).length;
-  zoneHead(G.t,gi===2?"A120":`${n}곳`,G.note);
-  HALLS.forEach((h,i)=>{ if(h.g===gi) list.appendChild(card(i)); });
+  zoneHead(G.t,`${HALLS.length}곳`,G.note);
+  HALLS.forEach((h,i)=>{ list.appendChild(card(i)); });
 });
 $("c-total").textContent=TOTAL; $("n-total").textContent=TOTAL;
 
@@ -658,7 +644,7 @@ function syncRoute(){
 /* 추천 동선·부스 찾기 */
 const badgeHTML=h=>`<span class="badge">${esc(h.z)}</span>`;
 if(ROUTE.length){
-  $("route-lead").textContent="입구에서 출구까지 한 방향으로 돌 수 있는 순서입니다. 누르면 해당 분야로 이동합니다.";
+  $("route-lead").textContent="왼쪽 출입구에서 시작해 시계 방향으로 한 바퀴 돌고 오른쪽 출입구로 나오는 순서입니다. 구역당 10분 안팎입니다. 누르면 해당 구역으로 이동합니다.";
   $("route").innerHTML=`<li><span class="end">${esc(ENTRY)}</span></li>`+
     ROUTE.map((i,k)=>`<li><button type="button" data-goto="${i}"><span class="st">${k+1}</span>${badgeHTML(HALLS[i])}<span class="nm">${esc(HALLS[i].ko)}</span><span class="ck"></span></button></li>`).join("")+
     `<li><span class="end">${esc(EXIT)}</span></li>`;

@@ -40,12 +40,19 @@ const LEGACY = {
   "적용가능성(코드)": "rateCodes", "제출ID": "sid", "제출 횟수": "rev"
 };
 
-/* 앱이 halls를 보내기 전에 setup을 실행할 때 쓰는 기본 전시 분야 목록 */
+/* 앱이 halls를 보내기 전에 setup을 실행할 때 쓰는 기본 전시장 구역 목록 */
 const DEFAULT_HALLS = [
-  "산업·생활안전·재해재난", "스마트 홈·오피스·헬스케어", "스마트 시티·빌리지", "에너지·환경",
-  "제조·유통·물류·농수축산", "S/W·플랫폼", "디바이스·통신기기", "보안",
-  "Moving City AI", "AX & Physical AI", "Real Life AI", "Sustainable City AI", "X-Space AI",
-  "AI&IoT 쇼케이스 · NIPA 전시관"
+  "입구 앞 · 남쪽 줄",
+  "기관 공동관",
+  "왼쪽 별관 · SS구역",
+  "NIPA 전시관 · AI&IoT 쇼케이스",
+  "왼쪽 위 · A·B열",
+  "위쪽 가운데 · C·D·E열",
+  "전남광주통합특별시관",
+  "오른쪽 가운데 · F·G열",
+  "오른쪽 위 · 기아·MARS 체험존",
+  "H131 · 동탄시티병원 X 대웅제약",
+  "MARS 2026 메인관 · 현대차·삼성생명"
 ];
 
 const MAX_LEN = 5000;
